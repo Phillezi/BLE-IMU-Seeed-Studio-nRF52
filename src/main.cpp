@@ -2,7 +2,7 @@
 #include "ble.hpp"
 #include "imu.hpp"
 #include "rtc.hpp"
-#include "nioblink.hpp"
+#include "nblink.hpp"
 
 #include <nrf_power.h>
 #include <nrf_soc.h>
@@ -20,7 +20,7 @@ void transmitCallback(void *arg, String data)
 
     pServer->transmit(data);
 
-    nioBlink(); // blink the led in a non-blocking way
+    nBlink(); // blink the led in a non-blocking way
 }
 
 void enterSleepMode()

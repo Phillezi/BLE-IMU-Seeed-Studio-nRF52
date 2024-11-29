@@ -1,12 +1,12 @@
 #pragma once
-#ifndef NIO_BLINK_HPP
-#define NIO_BLINK_HPP
+#ifndef N_BLINK_HPP
+#define N_BLINK_HPP
 
 #include <Arduino.h>
 
 #define BLINK_INTERVAL_MS 50
 
-void nioBlink()
+void nBlink()
 {
     static unsigned long lastFlashTime = 0; // Keep track of the last time the LED state was changed
     static bool ledState = false;           // Current state of the LED
