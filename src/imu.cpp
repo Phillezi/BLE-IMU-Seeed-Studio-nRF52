@@ -23,34 +23,38 @@ bool IMU::begin()
 }
 
 // Detect motion if the acceleration sum exceeds the threshold
-bool IMU::isMotionDetected(float threshold)
+inline bool IMU::isMotionDetected(
+    float aX,
+    float aY,
+    float aZ,
+    float threshold)
 {
-    aX = sensor.readFloatAccelX();
-    aY = sensor.readFloatAccelY();
-    aZ = sensor.readFloatAccelZ();
 
     float aSum = fabs(aX) + fabs(aY) + fabs(aZ);
     return aSum >= threshold;
 }
 
-void IMU::collectAndTransmit(std::function<void(void *, String)> transmitCallback, void *callbackArg)
+void IMU::collectAndTransmit(std::function<void(void *, const char *)> transmitCallback, void *callbackArg)
 {
-    if (isMotionDetected(1.0)) // Threshold for motion detection
+    float aX = sensor.readFloatAccelX();
+    float aY = sensor.readFloatAccelY();
+    float aZ = sensor.readFloatAccelZ();
+
+    if (isMotionDetected(aX, aY, aZ, 1.0)) // Threshold for motion detection
     {
-        aX = sensor.readFloatAccelX();
-        aY = sensor.readFloatAccelY();
-        aZ = sensor.readFloatAccelZ();
-        gX = sensor.readFloatGyroX();
-        gY = sensor.readFloatGyroY();
-        gZ = sensor.readFloatGyroZ();
+        float gX = sensor.readFloatGyroX();
+        float gY = sensor.readFloatGyroY();
+        float gZ = sensor.readFloatGyroZ();
+
+        char dataBuffer[DATA_STR_LEN + 1] = {0};
 
         // Format the data as CSV
         // first three is acceleration and the last three are gyro.
-        String dataLine = String(aX, 3) + "," + String(aY, 3) + "," + String(aZ, 3) + "," +
-                          String(gX, 3) + "," + String(gY, 3) + "," + String(gZ, 3);
+        snprintf(dataBuffer, DATA_STR_LEN, "%.3f,%.3f,%.3f,%.3f,%.3f,%.3f", aX, aY, aZ, gX, gY, gZ);
+        dataBuffer[DATA_STR_LEN] = 0;
 
-        transmitCallback(callbackArg, dataLine);
+        transmitCallback(callbackArg, dataBuffer);
 
-        Serial.println(dataLine);
+        Serial.println(dataBuffer);
     }
 }

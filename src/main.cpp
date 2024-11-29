@@ -13,7 +13,7 @@
 IMU imu(DEFAULT_IMU_I2C_ADDR);
 BLEServer server(SERVICE_UUID, IMU_CHARACTERISTIC_UUID);
 
-void transmitCallback(void *arg, String data)
+void transmitCallback(void *arg, const char *data)
 {
     BLEServer *pServer = (BLEServer *)arg;
     pServer->update();

@@ -4,7 +4,7 @@
 BLEServer::BLEServer(
     const char *serviceUUID, const char *characteristicUUID)
     : bleService(serviceUUID),
-      dataCharacteristic(characteristicUUID, BLERead | BLENotify, 50)
+      dataCharacteristic(characteristicUUID, BLERead | BLENotify, DATA_STR_LEN)
 {
 }
 
@@ -68,7 +68,7 @@ void BLEServer::update()
     }
 }
 
-void BLEServer::transmit(String data)
+void BLEServer::transmit(const char *data)
 {
     if (central)
     {
@@ -76,7 +76,7 @@ void BLEServer::transmit(String data)
         {
             Serial.print("sent data to: ");
             Serial.println(central.address());
-            dataCharacteristic.setValue(data.c_str());
+            dataCharacteristic.setValue(data);
         }
     }
 }
