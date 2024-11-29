@@ -6,12 +6,13 @@
 #include "Wire.h"
 
 #define SENSOR_READ_DELAY_MS 50
+#define DEFAULT_IMU_I2C_ADDR 0x6A
 
 class IMU
 {
 public:
     // Constructor with a default I2C address
-    IMU(uint8_t address = 0x6A); // Default I2C address for LSM6DS3
+    IMU(uint8_t address = DEFAULT_IMU_I2C_ADDR); // Default I2C address for LSM6DS3
 
     // Initialize the sensor
     bool begin();
