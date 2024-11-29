@@ -75,6 +75,10 @@ void loop()
             // Collect IMU data and transmit over BLE
             imu.collectAndTransmit(transmitCallback, (void *)&server);
         }
+        else
+        {
+            yield();
+        }
     }
     else
     {
