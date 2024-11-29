@@ -1,29 +1,49 @@
+#include <Arduino.h>
 #include "ble.hpp"
 #include "imu.hpp"
 
 #define SERVICE_UUID "123e4567-e89b-12d3-a456-426614174000"
 #define IMU_CHARACTERISTIC_UUID "123e4567-e89b-12d3-a456-426614174001"
 
+IMU imu(0x6A);
+BLEServer server(SERVICE_UUID, IMU_CHARACTERISTIC_UUID);
+
 void transmitCallback(void *arg, String data)
 {
     BLEServer *pServer = (BLEServer *)arg;
     pServer->transmit(data);
+    digitalWrite(LED_BUILTIN, HIGH);
+    delay(50); // Briefly flash the LED
+    digitalWrite(LED_BUILTIN, LOW);
 }
 
-int main()
+void setup()
 {
-    IMU imu(0x6A);
+    Serial.begin(SERIAL_BAUDRATE);
 
-    BLEServer server(SERVICE_UUID, IMU_CHARACTERISTIC_UUID);
-    if (!server.begin() ||
-        !imu.begin())
+    // Initialize BLE server
+    if (!server.begin())
     {
-        return -1;
+        Serial.println("Failed to initialize BLE server");
+        while (true)
+            ; // Halt execution
     }
 
-    while (true)
+    // Initialize IMU
+    if (!imu.begin())
     {
-        imu.collectAndTransmit(transmitCallback, (void *)&server);
+        Serial.println("Failed to initialize IMU");
+        while (true)
+            ; // Halt execution
     }
-    return 0;
+
+    Serial.println("Initialization successful!");
+}
+
+void loop()
+{
+    // Collect IMU data and transmit over BLE
+    imu.collectAndTransmit(transmitCallback, (void *)&server);
+
+    delay(10);
 }
