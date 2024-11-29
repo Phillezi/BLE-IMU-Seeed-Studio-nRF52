@@ -26,13 +26,7 @@ private:
     LSM6DS3 sensor; // IMU sensor object
 
     // Accelerometer and Gyroscope data
-    float aX, aY, aZ, gX, gY, gZ;
-
-    // Number of samples to collect
-    const int numSamples = 119;
-
-    // Samples counter
-    int samplesRead;
+    float aX, aY, aZ, gX, gY, gZ = 0;
 };
 
 #endif

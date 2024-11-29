@@ -1,7 +1,7 @@
 #include "imu.hpp"
 
 // Constructor: Initializes the IMU with the given I2C address
-IMU::IMU(uint8_t address) : sensor(I2C_MODE, address), samplesRead(0), numSamples(100) // default to 100 samples
+IMU::IMU(uint8_t address) : sensor(I2C_MODE, address)
 {
 }
 
@@ -35,34 +35,22 @@ bool IMU::isMotionDetected(float threshold)
 
 void IMU::collectAndTransmit(std::function<void(void *, String)> transmitCallback, void *callbackArg)
 {
-    while (samplesRead < numSamples)
+    if (isMotionDetected(1.0)) // Threshold for motion detection
     {
-        if (isMotionDetected(1.0)) // Threshold for motion detection
-        {
-            aX = sensor.readFloatAccelX();
-            aY = sensor.readFloatAccelY();
-            aZ = sensor.readFloatAccelZ();
-            gX = sensor.readFloatGyroX();
-            gY = sensor.readFloatGyroY();
-            gZ = sensor.readFloatGyroZ();
+        aX = sensor.readFloatAccelX();
+        aY = sensor.readFloatAccelY();
+        aZ = sensor.readFloatAccelZ();
+        gX = sensor.readFloatGyroX();
+        gY = sensor.readFloatGyroY();
+        gZ = sensor.readFloatGyroZ();
 
-            // Format the data as CSV
-            // first three is acceleration and the last three are gyro.
-            String dataLine = String(aX, 3) + "," + String(aY, 3) + "," + String(aZ, 3) + "," +
-                              String(gX, 3) + "," + String(gY, 3) + "," + String(gZ, 3);
+        // Format the data as CSV
+        // first three is acceleration and the last three are gyro.
+        String dataLine = String(aX, 3) + "," + String(aY, 3) + "," + String(aZ, 3) + "," +
+                          String(gX, 3) + "," + String(gY, 3) + "," + String(gZ, 3);
 
-            transmitCallback(callbackArg, dataLine);
+        transmitCallback(callbackArg, dataLine);
 
-            Serial.println(dataLine);
-
-            samplesRead++;
-            delay(SENSOR_READ_DELAY_MS); // Small delay to simulate sensor reading interval
-        }
-    }
-
-    if (samplesRead == numSamples)
-    {
-        Serial.println("Data collection complete.");
-        samplesRead = 0; // Reset for next collection
+        Serial.println(dataLine);
     }
 }
