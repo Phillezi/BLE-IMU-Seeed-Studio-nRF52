@@ -17,6 +17,8 @@ public:
     // Initialize BLE and service
     bool begin();
 
+    void update();
+
     void transmit(String data);
 
 private:

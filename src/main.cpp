@@ -11,6 +11,8 @@ BLEServer server(SERVICE_UUID, IMU_CHARACTERISTIC_UUID);
 void transmitCallback(void *arg, String data)
 {
     BLEServer *pServer = (BLEServer *)arg;
+    pServer->update();
+
     pServer->transmit(data);
     digitalWrite(LED_BUILTIN, HIGH);
     delay(50); // Briefly flash the LED

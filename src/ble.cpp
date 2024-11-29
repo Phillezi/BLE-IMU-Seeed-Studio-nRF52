@@ -46,6 +46,28 @@ bool BLEServer::begin()
     return true;
 }
 
+// Handle BLE connections and disconnections
+void BLEServer::update()
+{
+    BLEDevice newCentral = BLE.central();
+
+    // Handle new central connection
+    if (newCentral && !central)
+    {
+        central = newCentral;
+        Serial.print("Connected to central: ");
+        Serial.println(central.address());
+    }
+
+    // Handle central disconnection
+    if (central && !central.connected())
+    {
+        Serial.print("Disconnected from central: ");
+        Serial.println(central.address());
+        central = BLEDevice(); // Reset central
+    }
+}
+
 void BLEServer::transmit(String data)
 {
     if (central)
