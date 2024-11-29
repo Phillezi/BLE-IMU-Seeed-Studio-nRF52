@@ -1,7 +1,7 @@
 #include "imu.hpp"
 
 // Constructor: Initializes the IMU with the given I2C address
-IMU::IMU(uint8_t address) : sensor(I2C_MODE, address), samplesRead(0), numSamples(100) // default to 100 samples
+IMU::IMU(uint8_t address) : sensor(I2C_MODE, address)
 {
 }
 
@@ -23,46 +23,38 @@ bool IMU::begin()
 }
 
 // Detect motion if the acceleration sum exceeds the threshold
-bool IMU::isMotionDetected(float threshold)
+inline bool IMU::isMotionDetected(
+    float aX,
+    float aY,
+    float aZ,
+    float threshold)
 {
-    aX = sensor.readFloatAccelX();
-    aY = sensor.readFloatAccelY();
-    aZ = sensor.readFloatAccelZ();
 
     float aSum = fabs(aX) + fabs(aY) + fabs(aZ);
     return aSum >= threshold;
 }
 
-void IMU::collectAndTransmit(std::function<void(void *, String)> transmitCallback, void *callbackArg)
+void IMU::collectAndTransmit(std::function<void(void *, const char *)> transmitCallback, void *callbackArg)
 {
-    while (samplesRead < numSamples)
+    float aX = sensor.readFloatAccelX();
+    float aY = sensor.readFloatAccelY();
+    float aZ = sensor.readFloatAccelZ();
+
+    if (isMotionDetected(aX, aY, aZ, 1.0)) // Threshold for motion detection
     {
-        if (isMotionDetected(1.0)) // Threshold for motion detection
-        {
-            aX = sensor.readFloatAccelX();
-            aY = sensor.readFloatAccelY();
-            aZ = sensor.readFloatAccelZ();
-            gX = sensor.readFloatGyroX();
-            gY = sensor.readFloatGyroY();
-            gZ = sensor.readFloatGyroZ();
+        float gX = sensor.readFloatGyroX();
+        float gY = sensor.readFloatGyroY();
+        float gZ = sensor.readFloatGyroZ();
 
-            // Format the data as CSV
-            // first three is acceleration and the last three are gyro.
-            String dataLine = String(aX, 3) + "," + String(aY, 3) + "," + String(aZ, 3) + "," +
-                              String(gX, 3) + "," + String(gY, 3) + "," + String(gZ, 3);
+        char dataBuffer[DATA_STR_LEN + 1] = {0};
 
-            transmitCallback(callbackArg, dataLine);
+        // Format the data as CSV
+        // first three is acceleration and the last three are gyro.
+        snprintf(dataBuffer, DATA_STR_LEN, "%.3f,%.3f,%.3f,%.3f,%.3f,%.3f", aX, aY, aZ, gX, gY, gZ);
+        dataBuffer[DATA_STR_LEN] = 0;
 
-            Serial.println(dataLine);
+        transmitCallback(callbackArg, dataBuffer);
 
-            samplesRead++;
-            delay(SENSOR_READ_DELAY_MS); // Small delay to simulate sensor reading interval
-        }
-    }
-
-    if (samplesRead == numSamples)
-    {
-        Serial.println("Data collection complete.");
-        samplesRead = 0; // Reset for next collection
+        Serial.println(dataBuffer);
     }
 }

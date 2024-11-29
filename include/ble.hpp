@@ -5,8 +5,8 @@
 #include <ArduinoBLE.h>
 #include <functional>
 
-#define UPDATE_FREQ_MS 1000
 #define SERIAL_BAUDRATE 9600
+#define DATA_STR_LEN 70
 
 class BLEServer
 {
@@ -19,7 +19,12 @@ public:
 
     void update();
 
-    void transmit(String data);
+    void transmit(const char *data);
+
+    bool isConnected()
+    {
+        return central.connected();
+    }
 
 private:
     // BLE Service and Characteristics
