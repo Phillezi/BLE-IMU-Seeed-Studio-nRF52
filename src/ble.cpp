@@ -4,7 +4,7 @@
 BLEServer::BLEServer(
     const char *serviceUUID, const char *characteristicUUID)
     : bleService(serviceUUID),
-      dataCharacteristic(characteristicUUID, BLERead | BLENotify, 0)
+      dataCharacteristic(characteristicUUID, BLERead | BLENotify, 50)
 {
 }
 
