@@ -2,6 +2,7 @@
 #include "ble.hpp"
 #include "imu.hpp"
 #include "rtc.hpp"
+#include "nioblink.hpp"
 
 #include <nrf_power.h>
 #include <nrf_soc.h>
@@ -18,9 +19,8 @@ void transmitCallback(void *arg, String data)
     pServer->update();
 
     pServer->transmit(data);
-    digitalWrite(LED_BUILTIN, HIGH);
-    delay(50); // Briefly flash the LED
-    digitalWrite(LED_BUILTIN, LOW);
+
+    nioBlink(); // blink the led in a non-blocking way
 }
 
 void enterSleepMode()
@@ -28,10 +28,12 @@ void enterSleepMode()
     digitalWrite(LED_BUILTIN, LOW);
     Serial.println("Entering sleep mode.");
 
-    // Clear any pending events
-    __SEV();
-    __WFE();
-    __WFE(); // Enter System ON sleep mode (requires two calls to __WFE)
+    if (!server.isConnected())
+    {
+        __SEV(); // Clear any pending events
+        __WFE();
+        __WFE(); // Enter System ON sleep mode (requires two calls to __WFE)
+    }
 
     Serial.println("Waking up from sleep.");
     digitalWrite(LED_BUILTIN, HIGH);
@@ -56,6 +58,8 @@ void setup()
         while (true)
             ; // Halt execution
     }
+
+    setupRTC();
 
     Serial.println("Initialization successful!");
 }
