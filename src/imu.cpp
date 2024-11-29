@@ -60,7 +60,6 @@ void IMU::collectAndTransmit(std::function<void(void *, String)> transmitCallbac
         }
     }
 
-    // Reset samples if desired (or handle logic here)
     if (samplesRead == numSamples)
     {
         Serial.println("Data collection complete.");
