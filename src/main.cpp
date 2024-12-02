@@ -10,6 +10,11 @@
 #define SERVICE_UUID "123e4567-e89b-12d3-a456-426614174000"
 #define IMU_CHARACTERISTIC_UUID "123e4567-e89b-12d3-a456-426614174001"
 
+#define TRANSMIT_DELAY_MS 100
+
+// uncomment to enable RTC, It doesnt work currently
+// #define USE RTC
+
 IMU imu(DEFAULT_IMU_I2C_ADDR);
 BLEServer server(SERVICE_UUID, IMU_CHARACTERISTIC_UUID);
 
@@ -59,20 +64,34 @@ void setup()
             ; // Halt execution
     }
 
+#ifdef USE_RTC
     setupRTC();
+#endif
 
     Serial.println("Initialization successful!");
 }
 
 void loop()
 {
+    static unsigned long lasttransmit = 0;
     if (server.isConnected())
     {
+#ifdef USE_RTC
         enableRTC();
-        if (ticker)
+#endif
+        if (
+#ifndef USE_RTC
+            millis() - lasttransmit >= TRANSMIT_DELAY_MS
+#else
+            ticker
+#endif
+        )
         {
+            lasttransmit = millis();
+#ifdef USE_RTC
             ticker = false;
-            // Collect IMU data and transmit over BLE
+#endif
+            //  Collect IMU data and transmit over BLE
             imu.collectAndTransmit(transmitCallback, (void *)&server);
         }
         else
@@ -82,7 +101,11 @@ void loop()
     }
     else
     {
+        digitalWrite(LED_BUILTIN, LOW);
+#ifdef USE_RTC
         disableRTC();
-        enterSleepMode();
+#endif
+        // enterSleepMode();
+        yield();
     }
 }

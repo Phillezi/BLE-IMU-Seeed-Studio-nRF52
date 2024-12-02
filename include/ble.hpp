@@ -23,6 +23,7 @@ public:
 
     bool isConnected()
     {
+        update();
         return central.connected();
     }
 
