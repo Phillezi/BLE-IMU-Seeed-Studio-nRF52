@@ -10,10 +10,10 @@
 #define SERVICE_UUID "123e4567-e89b-12d3-a456-426614174000"
 #define IMU_CHARACTERISTIC_UUID "123e4567-e89b-12d3-a456-426614174001"
 
-#define IMU_SAMPLE_RATE_HZ 240
+#define IMU_SAMPLE_RATE_HZ 50
 
 // uncomment to enable RTC, It doesnt work currently
-// #define USE RTC
+// #define USE_RTC
 
 IMU imu(DEFAULT_IMU_I2C_ADDR);
 BLEServer server(SERVICE_UUID, IMU_CHARACTERISTIC_UUID);
@@ -32,6 +32,7 @@ void enterSleepMode()
 {
     digitalWrite(LED_BUILTIN, LOW);
     Serial.println("Entering sleep mode.");
+    unsigned long sleepStart = micros();
 
     if (!server.isConnected())
     {
@@ -40,7 +41,11 @@ void enterSleepMode()
         __WFE(); // Enter System ON sleep mode (requires two calls to __WFE)
     }
 
+    unsigned long sleepEnd = micros();
+
     Serial.println("Waking up from sleep.");
+    Serial.print(sleepEnd - sleepStart);
+    Serial.println(" micros");
     digitalWrite(LED_BUILTIN, HIGH);
 }
 
@@ -73,7 +78,6 @@ void setup()
 
 void loop()
 {
-    static unsigned long lasttransmit = 0;
     if (server.isConnected())
     {
 #ifdef USE_RTC
@@ -91,7 +95,8 @@ void loop()
             ticker = false;
 #endif
             //  Collect IMU data and transmit over BLE
-            imu.collectAndTransmit(transmitCallback, (void *)&server);
+            // imu.collectAndTransmit(transmitCallback, (void *)&server);
+            imu.update(transmitCallback, (void *)&server);
         }
         else
         {

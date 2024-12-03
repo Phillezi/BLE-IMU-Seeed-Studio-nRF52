@@ -10,6 +10,10 @@ bool IMU::begin(uint16_t samplerate)
 {
     sensor.settings.gyroSampleRate = samplerate;
     sensor.settings.accelSampleRate = samplerate;
+
+    lastSampleRead = 0;
+    sampleInterval = 1000000 / samplerate;
+
     if (sensor.begin() != 0)
     {
         Serial.println("Device error");
@@ -30,16 +34,34 @@ bool IMU::begin(uint16_t samplerate)
     }
 }
 
-// Detect motion if the acceleration sum exceeds the threshold
-inline bool IMU::isMotionDetected(
-    float aX,
-    float aY,
-    float aZ,
-    float threshold)
+void IMU::update(std::function<void(void *, const char *)> transmitCallback, void *callbackArg)
 {
+    unsigned long currentTime = micros();
+    if (currentTime - lastSampleRead >= sampleInterval)
+    {
+        lastSampleRead = currentTime;
 
-    float aSum = fabs(aX) + fabs(aY) + fabs(aZ);
-    return aSum >= threshold;
+        float aX = sensor.readFloatAccelX();
+        float aY = sensor.readFloatAccelY();
+        float aZ = sensor.readFloatAccelZ();
+        float gX = sensor.readFloatGyroX();
+        float gY = sensor.readFloatGyroY();
+        float gZ = sensor.readFloatGyroZ();
+
+        if (samplesRead >= samplesToRead)
+        {
+            char dataBuffer[DATA_STR_LEN + 1] = {0};
+            // Format the data as CSV
+            // first three is acceleration and the last three are gyro.
+            snprintf(dataBuffer, DATA_STR_LEN, "%.3f,%.3f,%.3f,%.3f,%.3f,%.3f", aX, aY, aZ, gX, gY, gZ);
+            dataBuffer[DATA_STR_LEN] = 0;
+
+            transmitCallback(callbackArg, dataBuffer);
+
+            Serial.println(dataBuffer);
+            samplesRead = 0;
+        }
+    }
 }
 
 void IMU::collectAndTransmit(std::function<void(void *, const char *)> transmitCallback, void *callbackArg)

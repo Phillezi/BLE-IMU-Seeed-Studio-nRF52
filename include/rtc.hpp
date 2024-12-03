@@ -4,7 +4,7 @@
 
 #include <nrf_rtc.h>
 
-#define UPDATE_INTERVAL_MS 100
+#define UPDATE_INTERVAL_MS 20
 
 volatile bool ticker = false;
 

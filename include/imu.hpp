@@ -18,16 +18,20 @@ public:
     // samplerate is the samplerate in hertz
     bool begin(uint16_t samplerate);
 
-    // Detect significant motion based on acceleration threshold
-    inline bool isMotionDetected(float aX,
-                                 float aY,
-                                 float aZ,
-                                 float threshold = 2.5); // Detect motion (default threshold: 2.5)
-
     void collectAndTransmit(std::function<void(void *, const char *)> transmitCallback, void *callbackArg = nullptr);
+
+    void update(std::function<void(void *, const char *)> transmitCallback, void *callbackArg = nullptr);
 
 private:
     LSM6DS3 sensor; // IMU sensor object
+
+    uint32_t samplesRead;
+
+    uint32_t samplesToRead;
+
+    unsigned long lastSampleRead;
+
+    unsigned long sampleInterval;
 
     // Accelerometer and Gyroscope data
 };
