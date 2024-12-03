@@ -15,7 +15,8 @@ public:
     IMU(uint8_t address = DEFAULT_IMU_I2C_ADDR); // Default I2C address for LSM6DS3
 
     // Initialize the sensor
-    bool begin();
+    // samplerate is the samplerate in hertz
+    bool begin(uint16_t samplerate);
 
     // Detect significant motion based on acceleration threshold
     inline bool isMotionDetected(float aX,

@@ -10,7 +10,7 @@
 #define SERVICE_UUID "123e4567-e89b-12d3-a456-426614174000"
 #define IMU_CHARACTERISTIC_UUID "123e4567-e89b-12d3-a456-426614174001"
 
-#define TRANSMIT_DELAY_MS 100
+#define IMU_SAMPLE_RATE_HZ 240
 
 // uncomment to enable RTC, It doesnt work currently
 // #define USE RTC
@@ -57,7 +57,7 @@ void setup()
     }
 
     // Initialize IMU
-    if (!imu.begin())
+    if (!imu.begin(IMU_SAMPLE_RATE_HZ))
     {
         Serial.println("Failed to initialize IMU");
         while (true)
@@ -81,13 +81,12 @@ void loop()
 #endif
         if (
 #ifndef USE_RTC
-            millis() - lasttransmit >= TRANSMIT_DELAY_MS
+            true
 #else
             ticker
 #endif
         )
         {
-            lasttransmit = millis();
 #ifdef USE_RTC
             ticker = false;
 #endif
